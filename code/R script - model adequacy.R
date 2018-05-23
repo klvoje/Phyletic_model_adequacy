@@ -126,7 +126,7 @@ BM_only<-indata_3_modes[indata_3_modes[, "mode"] == "Random walk",]
 DT_only<-indata_3_modes[indata_3_modes[, "mode"] == "Directional",]
 
 
-# Check models that showed both a realative and abolsute fit to the data:
+# Check models that showed both a relative and absolute fit to the data:
 adequate_stasis.models<-rep(NA, nrow(stasis_only))
 adequate_BM.models<-rep(NA, nrow(BM_only))
 adequate_DT.models<-rep(NA, nrow(DT_only))
@@ -211,6 +211,8 @@ plot.paleoTS(y)
 
 fit3models(y, method = "Joint")
 fit3adequacy.RW(y, nrep=1000, plot = TRUE)
+
+fit3adequacy.trend(y, nrep=1000, plot = TRUE)
 
 
 
