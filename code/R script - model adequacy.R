@@ -101,7 +101,7 @@ for (i in 1:nr_datasets){
 
 
 
-# Pick out the models that show a certain fit to the different modes:
+# Frequency of the different modes:
 
 mode<-rep(NA, length(out[,1]))
 
@@ -113,20 +113,64 @@ for (i in 1:length(mode)){
 }
 
 
-
-#Frequency of the different modes:
 table(mode)
 
-# Combine mode and data matrix:
-indata_3_modes<-cbind(out,mode)
-#write.csv(indata_stasis, "out_file.csv")
+
+# Finding out how many cases where the second best model has 2 or less AICc units less support compared to best model: 
+
+direct_RW<-rep(NA, length(out[,1]))
+direct_Stasis<-rep(NA, length(out[,1]))
+RW_Stasis<-rep(NA, length(out[,1]))
+direct_RW_stasis<-rep(NA, length(out[,1]))
+
+
+for (i in 1:length(direct_RW)){
+  
+  if (mode[i]=="Random walk" & abs(out[i,1]-out[i,2]) <=2) direct_RW[i]<-"direct_RW"
+  if (mode[i]=="Directional" & abs(out[i,1]-out[i,2]) <=2) direct_RW[i]<-"direct_RW"
+  
+  if (mode[i]=="Directional" & abs(out[i,1]-out[i,3]) <=2) direct_Stasis[i]<-"direct_stasis"
+  if (mode[i]=="Stasis" & abs(out[i,1]-out[i,3]) <=2) direct_Stasis[i]<-"direct_stasis"
+  
+  if (mode[i]=="Random walk" & abs(out[i,2]-out[i,3]) <=2) RW_Stasis[i]<-"RW_Stasis"
+  if (mode[i]=="Stasis" & abs(out[i,2]-out[i,3]) <=2) RW_Stasis[i]<-"RW_Stasis"
+  
+  if (mode[i]=="Random walk" & abs(out[i,1]-out[i,2]) <=2 & abs(out[i,1]-out[i,3]) <=2 & abs(out[i,2]-out[i,3]) <=2) direct_RW_stasis[i]<-"All_thee"
+  if (mode[i]=="Stasis" & abs(out[i,1]-out[i,2]) <=2 & abs(out[i,1]-out[i,3]) <=2 & abs(out[i,2]-out[i,3]) <=2) direct_RW_stasis[i]<-"All_thee"
+  if (mode[i]=="Directional" & abs(out[i,1]-out[i,2]) <=2 & abs(out[i,1]-out[i,3]) <=2 & abs(out[i,2]-out[i,3]) <=2) direct_RW_stasis[i]<-"All_thee"
+  
+  
+}
+
+#Combine large matrix with vectors 
+indata_3_modes<-cbind(out, mode, direct_RW, direct_Stasis, RW_Stasis, direct_RW_stasis)
+
+
+passed_RW<-rep(NA, nrow(indata_3_modes))
+passed_directional<-rep(NA, nrow(indata_3_modes))
+passed_stasis<-rep(NA, nrow(indata_3_modes))
+
+for (i in 1:nrow(indata_3_modes)){
+  
+  if (indata_3_modes[i,13] == "PASSED" & indata_3_modes[i,18]=="PASSED" & indata_3_modes[i,23]=="PASSED" & indata_3_modes[i,28]=="PASSED") passed_stasis[i]<-"PASSED" else passed_stasis[i]<-"FAILED"
+  if (indata_3_modes[i,51] == "PASSED" & indata_3_modes[i,56]=="PASSED" & indata_3_modes[i,61]=="PASSED" ) passed_directional[i]<-"PASSED" else passed_directional[i]<-"FAILED"
+  if (indata_3_modes[i,34] == "PASSED" & indata_3_modes[i,39]=="PASSED" & indata_3_modes[i,44]=="PASSED" ) passed_RW[i]<-"PASSED" else passed_RW[i]<-"PASSED"
+  
+}
+
+
+#Table summarizing wich data sets where the second best model has a relative fit =< 2AICc units compared to the best model, and to what extent adequacy models help in picking an adequate model:   
+test_two_aicc_units_difference<-cbind(passed_RW, passed_directional, passed_stasis, direct_RW, direct_Stasis, RW_Stasis, direct_RW_stasis)
+
+
+
+
+# Check models that showed both a relative and absolute fit to the data:
 
 stasis_only<-indata_3_modes[indata_3_modes[, "mode"] == "Stasis",]
 BM_only<-indata_3_modes[indata_3_modes[, "mode"] == "Random walk",]
 DT_only<-indata_3_modes[indata_3_modes[, "mode"] == "Directional",]
 
-
-# Check models that showed both a relative and absolute fit to the data:
 adequate_stasis.models<-rep(NA, nrow(stasis_only))
 adequate_BM.models<-rep(NA, nrow(BM_only))
 adequate_DT.models<-rep(NA, nrow(DT_only))
@@ -152,7 +196,7 @@ for (i in 1:length(DT_only[,1])){
 
 
 # Combine data frames:
-temp_data.frame<-as.data.frame(rbind(stasis_only, BM_only ,DT_only))
+temp_data.frame<-as.data.frame(rbind(stasis_only[,1:67], BM_only[,1:67] ,DT_only[,1:67]))
 
 new_3_modes<-cbind(temp_data.frame,c(adequate_stasis.models, adequate_BM.models, adequate_DT.models))
 dim(new_3_modes)
@@ -166,6 +210,7 @@ DT_models<-cbind(DT_only, adequate_DT.models)
 new_3_modes_adequate<-new_3_modes[new_3_modes[, "adequate"] == "TRUE",]
 dim(new_3_modes_adequate)
 table(new_3_modes_adequate$mode)
+
 
 ### Done preparing data frames ###
 
@@ -332,4 +377,7 @@ for (i in 1:length(adequate_stasis.DT.best)){
 }
 
 table(adequate_stasis.DT.best)
+
+
+
 
